@@ -1,10 +1,11 @@
-# Assignment: REST Service
+# REST Service
+
+## USE NEST.JS for all project
+## DON'T CHANGE package.json
+## DON'T CHANGE TESTS
+
 
 ## Description
-
-Let's try to create a Home Library Service! `Users` can create, read, update, delete data about `Artists`, `Tracks` and `Albums`, add them to `Favorites` in their own Home Library!
-
-NB! You must create new repository from [template](https://github.com/rolling-scopes-school/nodejs-course-template/generate) for this task. Its name must be nodejs2025Q2-service i.e. full link to the repository must be https://github.com/%your-gihub-id%/nodejs2025Q2-service.
 
 **Create an application, the application should operate with the following resources:**
 
