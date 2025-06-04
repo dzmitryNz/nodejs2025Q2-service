@@ -52,7 +52,10 @@ export class UserController {
   @Post()
   create(@Body() body: CreateUserDto) {
     if (!body.login || !body.password) {
-      throw new HttpException('Missing required fields', HttpStatus.BAD_REQUEST);
+      throw new HttpException(
+        'Missing required fields',
+        HttpStatus.BAD_REQUEST,
+      );
     }
     return this.userService.create(body.login, body.password);
   }
@@ -63,9 +66,16 @@ export class UserController {
     @Body() body: UpdatePasswordDto,
   ) {
     if (!body.oldPassword || !body.newPassword) {
-      throw new HttpException('Missing required fields', HttpStatus.BAD_REQUEST);
+      throw new HttpException(
+        'Missing required fields',
+        HttpStatus.BAD_REQUEST,
+      );
     }
-    const result = this.userService.updatePassword(id, body.oldPassword, body.newPassword);
+    const result = this.userService.updatePassword(
+      id,
+      body.oldPassword,
+      body.newPassword,
+    );
     if (result === null) {
       throw new HttpException('User not found', HttpStatus.NOT_FOUND);
     }
@@ -83,4 +93,4 @@ export class UserController {
     }
     return { statusCode: 204 };
   }
-} 
+}

@@ -5,4 +5,4 @@ export interface User {
   version: number;
   createdAt: number;
   updatedAt: number;
-} 
+}

@@ -26,7 +26,11 @@ export class UserModel {
     return user;
   }
 
-  updatePassword(id: string, oldPassword: string, newPassword: string): User | null | 'forbidden' {
+  updatePassword(
+    id: string,
+    oldPassword: string,
+    newPassword: string,
+  ): User | null | 'forbidden' {
     const user = this.getById(id);
     if (!user) return null;
     if (user.password !== oldPassword) return 'forbidden';
@@ -42,4 +46,4 @@ export class UserModel {
     this.users.splice(idx, 1);
     return true;
   }
-} 
+}
