@@ -1,8 +1,18 @@
-import { User } from '../types/user.interface';
 import { randomUUID } from 'crypto';
 
+import { User } from 'src/interfaces/user.interface';
+
 export class UserModel {
-  private users: User[] = [];
+  private users: User[] = [
+    {
+      id: 'd7252305-3626-4836-a550-520638d5f13f',
+      login: 'login',
+      password: 'passs',
+      version: 1,
+      createdAt: 1,
+      updatedAt: 1,
+    },
+  ];
 
   getAll(): User[] {
     return this.users;
