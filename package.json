@@ -1,6 +1,6 @@
 {
   "name": "home-library",
-  "version": "0.0.1",
+  "version": "1.0.0",
   "description": "",
   "author": "",
   "private": true,
@@ -22,7 +22,11 @@
     "test:refresh": "cross-env TEST_MODE=auth jest --testPathPattern refresh.e2e.spec.ts --noStackTrace --runInBand",
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
-    "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand"
+    "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
+    "security:audit": "npm audit",
+    "security:fix": "npm audit fix",
+    "security:fix-force": "npm audit fix --force",
+    "security:check": "npm audit && npm outdated"
   },
   "dependencies": {
     "@nestjs/common": "^10.4.18",
