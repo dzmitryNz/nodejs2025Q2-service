@@ -1,7 +1,7 @@
 import { NestFactory } from '@nestjs/core';
+import { Logger, ValidationPipe } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { SwaggerModule } from '@nestjs/swagger';
-import { Logger } from '@nestjs/common';
 import * as YAML from 'yaml';
 import * as fs from 'fs';
 import * as path from 'path';
@@ -24,6 +24,7 @@ async function bootstrap() {
   );
   const swaggerDocument = YAML.parse(swaggerYaml);
 
+  app.useGlobalPipes(new ValidationPipe());
   app.useGlobalInterceptors(new RequestInterceptor(logger));
 
   SwaggerModule.setup('doc', app, swaggerDocument);
