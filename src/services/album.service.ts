@@ -1,45 +1,86 @@
 import { Injectable } from '@nestjs/common';
-
-import { Album } from 'src/interfaces/album.interface';
-import { AlbumModel } from 'src/models/album.model';
-import { FavoritesModel } from 'src/models/favorites.model';
-import { TrackModel } from 'src/models/track.model';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { Album } from '../models/album.entity';
+import { Track } from '../models/track.entity';
+import { Favorites } from '../models/favorites.entity';
 
 @Injectable()
 export class AlbumService {
-  private albumModel = new AlbumModel();
-  private trackModel = new TrackModel();
-  private favoritesModel = new FavoritesModel();
+  constructor(
+    @InjectRepository(Album)
+    private albumRepository: Repository<Album>,
+    @InjectRepository(Track)
+    private trackRepository: Repository<Track>,
+    @InjectRepository(Favorites)
+    private favoritesRepository: Repository<Favorites>,
+  ) {}
 
-  getAll(): Album[] {
-    return this.albumModel.getAll();
+  async getAll(): Promise<Album[]> {
+    return this.albumRepository.find({
+      relations: ['artist'],
+    });
   }
 
-  getById(id: string): Album | undefined {
-    return this.albumModel.getById(id);
+  async getById(id: string): Promise<Album | undefined> {
+    return this.albumRepository.findOne({
+      where: { id },
+      relations: ['artist'],
+    });
   }
 
-  create(name: string, year: number, artistId: string | null): Album {
-    return this.albumModel.create(name, year, artistId);
+  async create(
+    name: string,
+    year: number,
+    artistId: string | null,
+  ): Promise<Album> {
+    const album = this.albumRepository.create({
+      name,
+      year,
+      artistId,
+    });
+    return this.albumRepository.save(album);
   }
 
-  update(
+  async update(
     id: string,
     name: string,
     year: number,
     artistId: string | null,
-  ): Album | null {
-    return this.albumModel.update(id, name, year, artistId);
+  ): Promise<Album | null> {
+    const album = await this.albumRepository.findOne({ where: { id } });
+    if (!album) return null;
+
+    album.name = name;
+    album.year = year;
+    album.artistId = artistId;
+
+    return this.albumRepository.save(album);
   }
 
-  delete(id: string): boolean {
-    this.trackModel.removeAlbumReferences(id);
-    this.favoritesModel.removeAlbum(id);
+  async delete(id: string): Promise<boolean> {
+    // Удаляем ссылки на альбом в треках
+    await this.trackRepository
+      .createQueryBuilder()
+      .update(Track)
+      .set({ albumId: null })
+      .where('albumId = :id', { id })
+      .execute();
 
-    return this.albumModel.delete(id);
+    // Удаляем альбом из избранного
+    await this.favoritesRepository.delete({ albumId: id });
+
+    // Удаляем сам альбом
+    const result = await this.albumRepository.delete(id);
+    return result.affected ? result.affected > 0 : false;
   }
 
-  removeArtistReferences(artistId: string): void {
-    this.albumModel.removeArtistReferences(artistId);
+  async removeArtistReferences(artistId: string): Promise<void> {
+    await this.albumRepository
+      .createQueryBuilder()
+      .update(Album)
+      .set({ artistId: null })
+      .where('artistId = :artistId', { artistId })
+      .execute();
   }
 }

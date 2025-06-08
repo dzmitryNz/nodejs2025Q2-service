@@ -1,53 +1,71 @@
 import { Injectable } from '@nestjs/common';
-
-import { UserModel } from '../models/user.model';
-import { User } from 'src/interfaces/user.interface';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { User } from '../models/user.entity';
 
 @Injectable()
 export class UserService {
-  private userModel = new UserModel();
+  constructor(
+    @InjectRepository(User)
+    private userRepository: Repository<User>,
+  ) {}
 
-  getAll(): Omit<User, 'password'>[] {
-    return this.userModel.getAll().map((user) => ({
-      id: user.id,
-      login: user.login,
-      version: user.version,
-      createdAt: user.createdAt,
-      updatedAt: user.updatedAt,
-    }));
+  async getAll(): Promise<Omit<User, 'password'>[]> {
+    const users = await this.userRepository.find();
+    return users.map((user) => {
+      delete user.password;
+      return user;
+    });
   }
 
-  getById(id: string): Omit<User, 'password'> | undefined {
-    const user = this.userModel.getById(id);
+  async getById(id: string): Promise<Omit<User, 'password'> | undefined> {
+    const user = await this.userRepository.findOne({ where: { id } });
     if (!user) return undefined;
 
-    delete user.password;
-
     return user;
   }
 
-  create(login: string, password: string): Omit<User, 'password'> {
-    const user = this.userModel.create(login, password);
+  async create(
+    login: string,
+    password: string,
+  ): Promise<Omit<User, 'password'>> {
+    const user = this.userRepository.create({
+      login,
+      password,
+      version: 1,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    });
 
-    delete user.password;
+    const savedUser = await this.userRepository.save(user);
 
-    return user;
+    delete savedUser.password;
+
+    return savedUser;
   }
 
-  updatePassword(
+  async updatePassword(
     id: string,
     oldPassword: string,
     newPassword: string,
-  ): Omit<User, 'password'> | null | 'forbidden' {
-    const result = this.userModel.updatePassword(id, oldPassword, newPassword);
-    if (!result || result === 'forbidden') return result;
+  ): Promise<Omit<User, 'password'> | null | 'forbidden'> {
+    const user = await this.userRepository.findOne({ where: { id } });
+    if (!user) return null;
+    if (user.password !== oldPassword) return 'forbidden';
 
-    delete result.password;
+    user.password = newPassword;
+    user.version += 1;
+    user.updatedAt = new Date();
 
-    return result;
+    const updatedUser = await this.userRepository.save(user);
+
+    delete updatedUser.password;
+
+    return updatedUser;
   }
 
-  delete(id: string): boolean {
-    return this.userModel.delete(id);
+  async delete(id: string): Promise<boolean> {
+    const result = await this.userRepository.delete(id);
+    return result.affected ? result.affected > 0 : false;
   }
 }
