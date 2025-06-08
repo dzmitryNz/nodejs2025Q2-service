@@ -38,7 +38,10 @@ export class FavoritesController {
   removeArtist(@Param('id', new ParseUUIDPipe()) id: string) {
     const removed = this.favoritesService.removeArtist(id);
     if (!removed) {
-      throw new HttpException('Artist not found in favorites', HttpStatus.NOT_FOUND);
+      throw new HttpException(
+        'Artist not found in favorites',
+        HttpStatus.NOT_FOUND,
+      );
     }
     return { statusCode: 204 };
   }
@@ -60,7 +63,10 @@ export class FavoritesController {
   removeAlbum(@Param('id', new ParseUUIDPipe()) id: string) {
     const removed = this.favoritesService.removeAlbum(id);
     if (!removed) {
-      throw new HttpException('Album not found in favorites', HttpStatus.NOT_FOUND);
+      throw new HttpException(
+        'Album not found in favorites',
+        HttpStatus.NOT_FOUND,
+      );
     }
     return { statusCode: 204 };
   }
@@ -82,7 +88,10 @@ export class FavoritesController {
   removeTrack(@Param('id', new ParseUUIDPipe()) id: string) {
     const removed = this.favoritesService.removeTrack(id);
     if (!removed) {
-      throw new HttpException('Track not found in favorites', HttpStatus.NOT_FOUND);
+      throw new HttpException(
+        'Track not found in favorites',
+        HttpStatus.NOT_FOUND,
+      );
     }
     return { statusCode: 204 };
   }

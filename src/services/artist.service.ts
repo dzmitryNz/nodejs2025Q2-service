@@ -33,7 +33,7 @@ export class ArtistService {
     this.albumModel.removeArtistReferences(id);
     this.trackModel.removeArtistReferences(id);
     this.favoritesModel.removeArtist(id);
-    
+
     return this.artistModel.delete(id);
   }
 }

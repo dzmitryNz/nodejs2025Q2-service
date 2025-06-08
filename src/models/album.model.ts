@@ -9,7 +9,7 @@ export class AlbumModel {
       name: 'Some album',
       year: 2025,
       artistId: '2c4c957e-dafe-45d9-ae8f-f65bff4bb0f1',
-    }
+    },
   ];
 
   getAll(): Album[] {
@@ -31,10 +31,15 @@ export class AlbumModel {
     return album;
   }
 
-  update(id: string, name: string, year: number, artistId: string | null): Album | null {
+  update(
+    id: string,
+    name: string,
+    year: number,
+    artistId: string | null,
+  ): Album | null {
     const album = this.getById(id);
     if (!album) return null;
-    
+
     album.name = name;
     album.year = year;
     album.artistId = artistId;
@@ -50,7 +55,7 @@ export class AlbumModel {
   }
 
   removeArtistReferences(artistId: string): void {
-    this.albums = this.albums.map(album => {
+    this.albums = this.albums.map((album) => {
       if (album.artistId === artistId) {
         album.artistId = null;
       }

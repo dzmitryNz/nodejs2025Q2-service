@@ -20,14 +20,21 @@ export class FavoritesService {
     const favorites = this.favoritesModel.getAll();
     return {
       artists: favorites.artists
-        .map(id => this.artistService.getById(id))
-        .filter((artist): artist is NonNullable<typeof artist> => artist !== undefined),
+        .map((id) => this.artistService.getById(id))
+        .filter(
+          (artist): artist is NonNullable<typeof artist> =>
+            artist !== undefined,
+        ),
       albums: favorites.albums
-        .map(id => this.albumService.getById(id))
-        .filter((album): album is NonNullable<typeof album> => album !== undefined),
+        .map((id) => this.albumService.getById(id))
+        .filter(
+          (album): album is NonNullable<typeof album> => album !== undefined,
+        ),
       tracks: favorites.tracks
-        .map(id => this.trackService.getById(id))
-        .filter((track): track is NonNullable<typeof track> => track !== undefined),
+        .map((id) => this.trackService.getById(id))
+        .filter(
+          (track): track is NonNullable<typeof track> => track !== undefined,
+        ),
     };
   }
 

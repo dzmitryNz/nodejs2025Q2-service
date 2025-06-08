@@ -54,7 +54,11 @@ export class AlbumController {
         HttpStatus.BAD_REQUEST,
       );
     }
-    return this.albumService.create(body.name, body.year, body.artistId || null);
+    return this.albumService.create(
+      body.name,
+      body.year,
+      body.artistId || null,
+    );
   }
 
   @Put(':id')

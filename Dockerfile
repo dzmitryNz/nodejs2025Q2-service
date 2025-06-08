@@ -8,6 +8,8 @@ RUN npm install
 
 COPY . .
 
+
+RUN npm run security:audit
 RUN npm run build
 
 ENV PORT=4000

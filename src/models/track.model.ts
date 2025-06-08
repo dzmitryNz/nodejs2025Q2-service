@@ -9,8 +9,8 @@ export class TrackModel {
       name: 'Some track',
       artistId: '2c4c957e-dafe-45d9-ae8f-f65bff4bb0f1',
       albumId: 'fcd86404-2f8e-4ff1-86c4-da6cc2629a7c',
-      duration: 3
-    }
+      duration: 3,
+    },
   ];
 
   getAll(): Track[] {
@@ -21,7 +21,12 @@ export class TrackModel {
     return this.tracks.find((track) => track.id === id);
   }
 
-  create(name: string, artistId: string | null, albumId: string | null, duration: number): Track {
+  create(
+    name: string,
+    artistId: string | null,
+    albumId: string | null,
+    duration: number,
+  ): Track {
     const track: Track = {
       id: randomUUID(),
       name,
@@ -33,10 +38,16 @@ export class TrackModel {
     return track;
   }
 
-  update(id: string, name: string, artistId: string | null, albumId: string | null, duration: number): Track | null {
+  update(
+    id: string,
+    name: string,
+    artistId: string | null,
+    albumId: string | null,
+    duration: number,
+  ): Track | null {
     const track = this.getById(id);
     if (!track) return null;
-    
+
     track.name = name;
     track.artistId = artistId;
     track.albumId = albumId;
@@ -52,7 +63,7 @@ export class TrackModel {
   }
 
   removeArtistReferences(artistId: string): void {
-    this.tracks = this.tracks.map(track => {
+    this.tracks = this.tracks.map((track) => {
       if (track.artistId === artistId) {
         track.artistId = null;
       }
@@ -61,7 +72,7 @@ export class TrackModel {
   }
 
   removeAlbumReferences(albumId: string): void {
-    this.tracks = this.tracks.map(track => {
+    this.tracks = this.tracks.map((track) => {
       if (track.albumId === albumId) {
         track.albumId = null;
       }
