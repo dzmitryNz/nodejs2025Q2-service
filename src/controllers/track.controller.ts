@@ -9,6 +9,7 @@ import {
   HttpException,
   HttpStatus,
   ParseUUIDPipe,
+  HttpCode,
 } from '@nestjs/common';
 import { TrackService } from '../services/track.service';
 import { IsString, IsNumber, IsOptional, IsUUID } from 'class-validator';
@@ -48,6 +49,7 @@ export class TrackController {
   }
 
   @Post()
+  @HttpCode(201)
   create(@Body() body: CreateTrackDto) {
     if (!body.name || body.duration === undefined) {
       throw new HttpException(
@@ -88,6 +90,7 @@ export class TrackController {
   }
 
   @Delete(':id')
+  @HttpCode(204)
   delete(@Param('id', new ParseUUIDPipe()) id: string) {
     const deleted = this.trackService.delete(id);
     if (!deleted) {

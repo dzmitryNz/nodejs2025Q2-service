@@ -9,6 +9,7 @@ import {
   HttpException,
   HttpStatus,
   ParseUUIDPipe,
+  HttpCode,
 } from '@nestjs/common';
 import { UserService } from '../services/user.service';
 import { IsString, MinLength } from 'class-validator';
@@ -50,6 +51,7 @@ export class UserController {
   }
 
   @Post()
+  @HttpCode(201)
   create(@Body() body: CreateUserDto) {
     if (!body.login || !body.password) {
       throw new HttpException(
@@ -86,6 +88,7 @@ export class UserController {
   }
 
   @Delete(':id')
+  @HttpCode(204)
   delete(@Param('id', new ParseUUIDPipe()) id: string) {
     const deleted = this.userService.delete(id);
     if (!deleted) {

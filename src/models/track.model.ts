@@ -52,18 +52,20 @@ export class TrackModel {
   }
 
   removeArtistReferences(artistId: string): void {
-    this.tracks.forEach(track => {
+    this.tracks = this.tracks.map(track => {
       if (track.artistId === artistId) {
         track.artistId = null;
       }
+      return track;
     });
   }
 
   removeAlbumReferences(albumId: string): void {
-    this.tracks.forEach(track => {
+    this.tracks = this.tracks.map(track => {
       if (track.albumId === albumId) {
         track.albumId = null;
       }
+      return track;
     });
   }
 }

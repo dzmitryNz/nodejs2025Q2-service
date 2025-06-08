@@ -45,14 +45,16 @@ export class AlbumModel {
     const idx = this.albums.findIndex((album) => album.id === id);
     if (idx === -1) return false;
     this.albums.splice(idx, 1);
+
     return true;
   }
 
   removeArtistReferences(artistId: string): void {
-    this.albums.forEach(album => {
+    this.albums = this.albums.map(album => {
       if (album.artistId === artistId) {
         album.artistId = null;
       }
+      return album;
     });
   }
 }

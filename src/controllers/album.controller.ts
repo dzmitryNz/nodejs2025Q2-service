@@ -9,6 +9,7 @@ import {
   HttpException,
   HttpStatus,
   ParseUUIDPipe,
+  HttpCode,
 } from '@nestjs/common';
 import { IsString, IsNumber, IsOptional, IsUUID } from 'class-validator';
 
@@ -45,6 +46,7 @@ export class AlbumController {
   }
 
   @Post()
+  @HttpCode(201)
   create(@Body() body: CreateAlbumDto) {
     if (!body.name || body.year === undefined) {
       throw new HttpException(
@@ -79,6 +81,7 @@ export class AlbumController {
   }
 
   @Delete(':id')
+  @HttpCode(204)
   delete(@Param('id', new ParseUUIDPipe()) id: string) {
     const deleted = this.albumService.delete(id);
     if (!deleted) {

@@ -7,6 +7,7 @@ import {
   HttpException,
   HttpStatus,
   ParseUUIDPipe,
+  HttpCode,
 } from '@nestjs/common';
 import { FavoritesService } from '../services/favorites.service';
 
@@ -20,6 +21,7 @@ export class FavoritesController {
   }
 
   @Post('artist/:id')
+  @HttpCode(201)
   addArtist(@Param('id', new ParseUUIDPipe()) id: string) {
     const added = this.favoritesService.addArtist(id);
     if (!added) {
@@ -32,6 +34,7 @@ export class FavoritesController {
   }
 
   @Delete('artist/:id')
+  @HttpCode(204)
   removeArtist(@Param('id', new ParseUUIDPipe()) id: string) {
     const removed = this.favoritesService.removeArtist(id);
     if (!removed) {
@@ -53,6 +56,7 @@ export class FavoritesController {
   }
 
   @Delete('album/:id')
+  @HttpCode(204)
   removeAlbum(@Param('id', new ParseUUIDPipe()) id: string) {
     const removed = this.favoritesService.removeAlbum(id);
     if (!removed) {
@@ -74,6 +78,7 @@ export class FavoritesController {
   }
 
   @Delete('track/:id')
+  @HttpCode(204)
   removeTrack(@Param('id', new ParseUUIDPipe()) id: string) {
     const removed = this.favoritesService.removeTrack(id);
     if (!removed) {

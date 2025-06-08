@@ -9,6 +9,7 @@ import {
   HttpException,
   HttpStatus,
   ParseUUIDPipe,
+  HttpCode,
 } from '@nestjs/common';
 import { IsString, IsBoolean } from 'class-validator';
 
@@ -41,6 +42,7 @@ export class ArtistController {
   }
 
   @Post()
+  @HttpCode(201)
   create(@Body() body: CreateArtistDto) {
     if (!body.name || body.grammy === undefined) {
       throw new HttpException(
@@ -70,6 +72,7 @@ export class ArtistController {
   }
 
   @Delete(':id')
+  @HttpCode(204)
   delete(@Param('id', new ParseUUIDPipe()) id: string) {
     const deleted = this.artistService.delete(id);
     if (!deleted) {
