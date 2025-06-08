@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from '../models/user.entity';
@@ -51,8 +51,9 @@ export class UserService {
   ): Promise<Omit<User, 'password'> | null | 'forbidden'> {
     const user = await this.userRepository.findOne({ where: { id } });
     if (!user) return null;
-    if (user.password !== oldPassword) return 'forbidden';
-
+    if (user.password !== oldPassword) {
+      throw new HttpException('Old password is wrong', HttpStatus.FORBIDDEN);
+    }
     user.password = newPassword;
     user.version += 1;
     user.updatedAt = new Date();
