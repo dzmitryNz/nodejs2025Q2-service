@@ -23,7 +23,6 @@ class CreateAlbumDto {
   year: number;
 
   @IsOptional()
-  @IsUUID()
   artistId: string | null;
 }
 

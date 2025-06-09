@@ -19,11 +19,9 @@ class CreateTrackDto {
   name: string;
 
   @IsOptional()
-  @IsUUID()
   artistId: string | null;
 
   @IsOptional()
-  @IsUUID()
   albumId: string | null;
 
   @IsNumber()
