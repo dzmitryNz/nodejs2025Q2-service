@@ -1,4 +1,9 @@
-import { HttpException, HttpStatus, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  HttpException,
+  HttpStatus,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Album } from '../models/album.entity';
@@ -14,7 +19,7 @@ export class AlbumService {
     private trackRepository: Repository<Track>,
     @InjectRepository(Favorites)
     private favoritesRepository: Repository<Favorites>,
-  ) { }
+  ) {}
 
   async getAll(): Promise<Album[]> {
     return this.albumRepository.find({
@@ -46,7 +51,11 @@ export class AlbumService {
       });
       return this.albumRepository.save(album);
     } catch (error) {
-      throw new HttpException('Failed to create album', HttpStatus.UNPROCESSABLE_ENTITY);
+      console.error('Create Album ERROR', error);
+      throw new HttpException(
+        'Failed to create album',
+        HttpStatus.UNPROCESSABLE_ENTITY,
+      );
     }
   }
 
@@ -59,14 +68,18 @@ export class AlbumService {
     try {
       const album = await this.albumRepository.findOne({ where: { id } });
       if (!album) throw new NotFoundException('Album not found');
-  
+
       album.name = name;
       album.year = year;
       album.artistId = artistId;
-  
+
       return this.albumRepository.save(album);
     } catch (error) {
-      throw new HttpException('Failed to create album', HttpStatus.UNPROCESSABLE_ENTITY);
+      console.error('Update Album ERROR', error);
+      throw new HttpException(
+        'Failed to create album',
+        HttpStatus.UNPROCESSABLE_ENTITY,
+      );
     }
   }
 

@@ -18,7 +18,7 @@ export class FavoritesService {
     private albumRepository: Repository<Album>,
     @InjectRepository(Track)
     private trackRepository: Repository<Track>,
-  ) { }
+  ) {}
 
   async getAll(): Promise<FavoritesResponse> {
     const [artists, albums, tracks] = await Promise.all([
@@ -47,10 +47,7 @@ export class FavoritesService {
     try {
       const artist = await this.artistRepository.findOne({ where: { id } });
       if (!artist) {
-        throw new HttpException(
-          () => 'Artist not found',
-          HttpStatus.NOT_FOUND,
-        );
+        throw new HttpException(() => 'Artist not found', HttpStatus.NOT_FOUND);
       }
 
       const favorite = this.favoritesRepository.create({ artistId: id });

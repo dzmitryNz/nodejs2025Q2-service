@@ -55,7 +55,7 @@ export class FavoritesController {
         HttpStatus.NOT_FOUND,
       );
     }
-    return { };
+    return {};
   }
 
   @Post('track/:id')
@@ -73,6 +73,6 @@ export class FavoritesController {
         HttpStatus.NOT_FOUND,
       );
     }
-    return { };
+    return {};
   }
 }

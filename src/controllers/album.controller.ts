@@ -11,7 +11,7 @@ import {
   ParseUUIDPipe,
   HttpCode,
 } from '@nestjs/common';
-import { IsString, IsNumber, IsOptional, IsUUID } from 'class-validator';
+import { IsString, IsNumber, IsOptional } from 'class-validator';
 
 import { AlbumService } from 'src/services/album.service';
 
@@ -28,7 +28,7 @@ class CreateAlbumDto {
 
 @Controller('album')
 export class AlbumController {
-  constructor(private readonly albumService: AlbumService) { }
+  constructor(private readonly albumService: AlbumService) {}
 
   @Get()
   getAll() {

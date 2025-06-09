@@ -12,7 +12,7 @@ import {
   HttpCode,
 } from '@nestjs/common';
 import { TrackService } from '../services/track.service';
-import { IsString, IsNumber, IsOptional, IsUUID } from 'class-validator';
+import { IsString, IsNumber, IsOptional } from 'class-validator';
 
 class CreateTrackDto {
   @IsString()
@@ -91,6 +91,6 @@ export class TrackController {
     if (!deleted) {
       throw new HttpException('Track not found', HttpStatus.NOT_FOUND);
     }
-    return { };
+    return {};
   }
 }

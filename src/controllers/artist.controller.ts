@@ -70,6 +70,6 @@ export class ArtistController {
     if (!deleted) {
       throw new HttpException('Artist not found', HttpStatus.NOT_FOUND);
     }
-    return { };
+    return {};
   }
 }
