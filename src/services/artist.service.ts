@@ -1,39 +1,79 @@
-import { Injectable } from '@nestjs/common';
-
-import { Artist } from 'src/interfaces/artist.interface';
-import { AlbumModel } from 'src/models/album.model';
-import { ArtistModel } from 'src/models/artist.model';
-import { FavoritesModel } from 'src/models/favorites.model';
-import { TrackModel } from 'src/models/track.model';
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { Artist } from '../models/artist.entity';
+import { Album } from '../models/album.entity';
+import { Track } from '../models/track.entity';
+import { Favorites } from '../models/favorites.entity';
 
 @Injectable()
 export class ArtistService {
-  private artistModel = new ArtistModel();
-  private albumModel = new AlbumModel();
-  private trackModel = new TrackModel();
-  private favoritesModel = new FavoritesModel();
+  constructor(
+    @InjectRepository(Artist)
+    private artistRepository: Repository<Artist>,
+    @InjectRepository(Album)
+    private albumRepository: Repository<Album>,
+    @InjectRepository(Track)
+    private trackRepository: Repository<Track>,
+    @InjectRepository(Favorites)
+    private favoritesRepository: Repository<Favorites>,
+  ) {}
 
-  getAll(): Artist[] {
-    return this.artistModel.getAll();
+  async getAll(): Promise<Artist[]> {
+    return this.artistRepository.find();
   }
 
-  getById(id: string): Artist | undefined {
-    return this.artistModel.getById(id);
+  async getById(id: string): Promise<Artist | undefined> {
+    return this.artistRepository.findOne({ where: { id } });
   }
 
-  create(name: string, grammy: boolean): Artist {
-    return this.artistModel.create(name, grammy);
+  async create(name: string, grammy: boolean): Promise<Artist> {
+    const artist = this.artistRepository.create({ name, grammy });
+    return this.artistRepository.save(artist);
   }
 
-  update(id: string, name: string, grammy: boolean): Artist | null {
-    return this.artistModel.update(id, name, grammy);
+  async update(
+    id: string,
+    name: string,
+    grammy: boolean,
+  ): Promise<Artist | null> {
+    const artist = await this.artistRepository.findOne({ where: { id } });
+    if (!artist) {
+      throw new NotFoundException('Artist not found');
+    }
+
+    artist.name = name;
+    artist.grammy = grammy;
+    return this.artistRepository.save(artist);
   }
 
-  delete(id: string): boolean {
-    this.albumModel.removeArtistReferences(id);
-    this.trackModel.removeArtistReferences(id);
-    this.favoritesModel.removeArtist(id);
-    
-    return this.artistModel.delete(id);
+  async delete(id: string): Promise<boolean> {
+    // Удаляем ссылки на артиста в альбомах
+    await this.albumRepository
+      .createQueryBuilder()
+      .update(Album)
+      .set({ artistId: null })
+      .where('artistId = :id', { id })
+      .execute();
+
+    // Удаляем ссылки на артиста в треках
+    await this.trackRepository
+      .createQueryBuilder()
+      .update(Track)
+      .set({ artistId: null })
+      .where('artistId = :id', { id })
+      .execute();
+
+    // Удаляем артиста из избранного
+    await this.favoritesRepository
+      .createQueryBuilder()
+      .update(Favorites)
+      .set({ artistId: null })
+      .where('artistId = :id', { id })
+      .execute();
+
+    // Удаляем самого артиста
+    const result = await this.artistRepository.delete(id);
+    return result.affected ? result.affected > 0 : false;
   }
 }

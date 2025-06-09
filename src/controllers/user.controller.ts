@@ -43,11 +43,7 @@ export class UserController {
 
   @Get(':id')
   getById(@Param('id', new ParseUUIDPipe()) id: string) {
-    const user = this.userService.getById(id);
-    if (!user) {
-      throw new HttpException('User not found', HttpStatus.NOT_FOUND);
-    }
-    return user;
+    return this.userService.getById(id);
   }
 
   @Post()
@@ -73,18 +69,11 @@ export class UserController {
         HttpStatus.BAD_REQUEST,
       );
     }
-    const result = this.userService.updatePassword(
+    return this.userService.updatePassword(
       id,
       body.oldPassword,
       body.newPassword,
     );
-    if (result === null) {
-      throw new HttpException('User not found', HttpStatus.NOT_FOUND);
-    }
-    if (result === 'forbidden') {
-      throw new HttpException('Old password is wrong', HttpStatus.FORBIDDEN);
-    }
-    return result;
   }
 
   @Delete(':id')
@@ -94,6 +83,6 @@ export class UserController {
     if (!deleted) {
       throw new HttpException('User not found', HttpStatus.NOT_FOUND);
     }
-    return { statusCode: 204 };
+    return {};
   }
 }

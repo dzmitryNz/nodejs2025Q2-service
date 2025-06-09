@@ -12,18 +12,16 @@ import {
   HttpCode,
 } from '@nestjs/common';
 import { TrackService } from '../services/track.service';
-import { IsString, IsNumber, IsOptional, IsUUID } from 'class-validator';
+import { IsString, IsNumber, IsOptional } from 'class-validator';
 
 class CreateTrackDto {
   @IsString()
   name: string;
 
   @IsOptional()
-  @IsUUID()
   artistId: string | null;
 
   @IsOptional()
-  @IsUUID()
   albumId: string | null;
 
   @IsNumber()
@@ -83,9 +81,6 @@ export class TrackController {
       body.albumId || null,
       body.duration,
     );
-    if (!result) {
-      throw new HttpException('Track not found', HttpStatus.NOT_FOUND);
-    }
     return result;
   }
 
@@ -96,6 +91,6 @@ export class TrackController {
     if (!deleted) {
       throw new HttpException('Track not found', HttpStatus.NOT_FOUND);
     }
-    return { statusCode: 204 };
+    return {};
   }
 }

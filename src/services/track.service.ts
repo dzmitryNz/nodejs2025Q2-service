@@ -1,52 +1,88 @@
-import { Injectable } from '@nestjs/common';
-
-import { Track } from 'src/interfaces/track.interface';
-import { FavoritesModel } from 'src/models/favorites.model';
-import { TrackModel } from 'src/models/track.model';
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { Track } from '../models/track.entity';
+import { Favorites } from '../models/favorites.entity';
 
 @Injectable()
 export class TrackService {
-  private trackModel = new TrackModel();
-  private favoritesModel = new FavoritesModel();
+  constructor(
+    @InjectRepository(Track)
+    private trackRepository: Repository<Track>,
+    @InjectRepository(Favorites)
+    private favoritesRepository: Repository<Favorites>,
+  ) {}
 
-  getAll(): Track[] {
-    return this.trackModel.getAll();
+  async getAll(): Promise<Track[]> {
+    return this.trackRepository.find({
+      relations: ['artist', 'album'],
+    });
   }
 
-  getById(id: string): Track | undefined {
-    return this.trackModel.getById(id);
+  async getById(id: string): Promise<Track | undefined> {
+    return this.trackRepository.findOne({
+      where: { id },
+      relations: ['artist', 'album'],
+    });
   }
 
-  create(
+  async create(
     name: string,
     artistId: string | null,
     albumId: string | null,
     duration: number,
-  ): Track {
-    return this.trackModel.create(name, artistId, albumId, duration);
+  ): Promise<Track> {
+    const track = this.trackRepository.create({
+      name,
+      artistId,
+      albumId,
+      duration,
+    });
+    return this.trackRepository.save(track);
   }
 
-  update(
+  async update(
     id: string,
     name: string,
     artistId: string | null,
     albumId: string | null,
     duration: number,
-  ): Track | null {
-    return this.trackModel.update(id, name, artistId, albumId, duration);
+  ): Promise<Track | null> {
+    const track = await this.trackRepository.findOne({ where: { id } });
+    if (!track) {
+      throw new NotFoundException('Track not found');
+    }
+
+    track.name = name;
+    track.artistId = artistId;
+    track.albumId = albumId;
+    track.duration = duration;
+
+    return this.trackRepository.save(track);
   }
 
-  delete(id: string): boolean {
-    this.favoritesModel.removeTrack(id);
+  async delete(id: string): Promise<boolean> {
+    await this.favoritesRepository.delete({ trackId: id });
 
-    return this.trackModel.delete(id);
+    const result = await this.trackRepository.delete(id);
+    return result.affected ? result.affected > 0 : false;
   }
 
-  removeArtistReferences(artistId: string): void {
-    this.trackModel.removeArtistReferences(artistId);
+  async removeArtistReferences(artistId: string): Promise<void> {
+    await this.trackRepository
+      .createQueryBuilder()
+      .update(Track)
+      .set({ artistId: null })
+      .where('artistId = :artistId', { artistId })
+      .execute();
   }
 
-  removeAlbumReferences(albumId: string): void {
-    this.trackModel.removeAlbumReferences(albumId);
+  async removeAlbumReferences(albumId: string): Promise<void> {
+    await this.trackRepository
+      .createQueryBuilder()
+      .update(Track)
+      .set({ albumId: null })
+      .where('albumId = :albumId', { albumId })
+      .execute();
   }
 }

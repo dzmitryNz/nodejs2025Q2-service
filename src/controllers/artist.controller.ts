@@ -34,11 +34,7 @@ export class ArtistController {
 
   @Get(':id')
   getById(@Param('id', new ParseUUIDPipe()) id: string) {
-    const artist = this.artistService.getById(id);
-    if (!artist) {
-      throw new HttpException('Artist not found', HttpStatus.NOT_FOUND);
-    }
-    return artist;
+    return this.artistService.getById(id);
   }
 
   @Post()
@@ -64,11 +60,7 @@ export class ArtistController {
         HttpStatus.BAD_REQUEST,
       );
     }
-    const result = this.artistService.update(id, body.name, body.grammy);
-    if (!result) {
-      throw new HttpException('Artist not found', HttpStatus.NOT_FOUND);
-    }
-    return result;
+    return this.artistService.update(id, body.name, body.grammy);
   }
 
   @Delete(':id')
@@ -78,6 +70,6 @@ export class ArtistController {
     if (!deleted) {
       throw new HttpException('Artist not found', HttpStatus.NOT_FOUND);
     }
-    return { statusCode: 204 };
+    return {};
   }
 }
