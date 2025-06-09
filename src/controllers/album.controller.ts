@@ -29,7 +29,7 @@ class CreateAlbumDto {
 
 @Controller('album')
 export class AlbumController {
-  constructor(private readonly albumService: AlbumService) {}
+  constructor(private readonly albumService: AlbumService) { }
 
   @Get()
   getAll() {
@@ -38,11 +38,7 @@ export class AlbumController {
 
   @Get(':id')
   getById(@Param('id', new ParseUUIDPipe()) id: string) {
-    const album = this.albumService.getById(id);
-    if (!album) {
-      throw new HttpException('Album not found', HttpStatus.NOT_FOUND);
-    }
-    return album;
+    return this.albumService.getById(id);
   }
 
   @Post()
@@ -72,25 +68,18 @@ export class AlbumController {
         HttpStatus.BAD_REQUEST,
       );
     }
-    const result = this.albumService.update(
+
+    return this.albumService.update(
       id,
       body.name,
       body.year,
       body.artistId || null,
     );
-    if (!result) {
-      throw new HttpException('Album not found', HttpStatus.NOT_FOUND);
-    }
-    return result;
   }
 
   @Delete(':id')
   @HttpCode(204)
   delete(@Param('id', new ParseUUIDPipe()) id: string) {
-    const deleted = this.albumService.delete(id);
-    if (!deleted) {
-      throw new HttpException('Album not found', HttpStatus.NOT_FOUND);
-    }
-    return { statusCode: 204 };
+    return this.albumService.delete(id);
   }
 }

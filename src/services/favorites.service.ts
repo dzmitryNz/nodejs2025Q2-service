@@ -18,7 +18,7 @@ export class FavoritesService {
     private albumRepository: Repository<Album>,
     @InjectRepository(Track)
     private trackRepository: Repository<Track>,
-  ) {}
+  ) { }
 
   async getAll(): Promise<FavoritesResponse> {
     const [artists, albums, tracks] = await Promise.all([
@@ -49,7 +49,7 @@ export class FavoritesService {
       if (!artist) {
         throw new HttpException(
           () => 'Artist not found',
-          HttpStatus.NO_CONTENT,
+          HttpStatus.NOT_FOUND,
         );
       }
 
@@ -67,17 +67,14 @@ export class FavoritesService {
 
   async removeArtist(id: string): Promise<boolean> {
     const result = await this.favoritesRepository.delete({ artistId: id });
-    if (result.affected < 0) {
-      new HttpException(() => 'Artist not found', HttpStatus.NO_CONTENT);
-    }
-    return true;
+    return result.affected ? result.affected > 0 : false;
   }
 
   async addAlbum(id: string): Promise<Favorites> {
     try {
       const album = await this.albumRepository.findOne({ where: { id } });
       if (!album) {
-        throw new HttpException('Album not found', HttpStatus.NO_CONTENT);
+        throw new HttpException('Album not found', HttpStatus.NOT_FOUND);
       }
 
       const favorite = this.favoritesRepository.create({ albumId: id });
@@ -97,16 +94,16 @@ export class FavoritesService {
     return result.affected ? result.affected > 0 : false;
   }
 
-  async addTrack(id: string): Promise<boolean> {
+  async addTrack(id: string): Promise<Favorites> {
     try {
       const track = await this.trackRepository.findOne({ where: { id } });
       if (!track) {
-        throw new HttpException('Track not found', HttpStatus.NO_CONTENT);
+        throw new HttpException('Track not found', HttpStatus.NOT_FOUND);
       }
 
       const favorite = this.favoritesRepository.create({ trackId: id });
       await this.favoritesRepository.save(favorite);
-      return true;
+      return favorite;
     } catch (error) {
       console.error('Add Track ERROR', error);
       throw new HttpException(

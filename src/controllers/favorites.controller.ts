@@ -30,7 +30,14 @@ export class FavoritesController {
   @Delete('artist/:id')
   @HttpCode(204)
   removeArtist(@Param('id', new ParseUUIDPipe()) id: string) {
-    return this.favoritesService.removeArtist(id);
+    const removed = this.favoritesService.removeArtist(id);
+    if (!removed) {
+      throw new HttpException(
+        'Album not found in favorites',
+        HttpStatus.NOT_FOUND,
+      );
+    }
+    return {};
   }
 
   @Post('album/:id')
@@ -48,19 +55,12 @@ export class FavoritesController {
         HttpStatus.NOT_FOUND,
       );
     }
-    return { statusCode: 204 };
+    return { };
   }
 
   @Post('track/:id')
   addTrack(@Param('id', new ParseUUIDPipe()) id: string) {
-    const added = this.favoritesService.addTrack(id);
-    if (!added) {
-      throw new HttpException(
-        'Track not found',
-        HttpStatus.UNPROCESSABLE_ENTITY,
-      );
-    }
-    return { statusCode: 201 };
+    return this.favoritesService.addTrack(id);
   }
 
   @Delete('track/:id')
@@ -73,6 +73,6 @@ export class FavoritesController {
         HttpStatus.NOT_FOUND,
       );
     }
-    return { statusCode: 204 };
+    return { };
   }
 }

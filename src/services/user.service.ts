@@ -1,4 +1,4 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from '../models/user.entity';
@@ -8,7 +8,7 @@ export class UserService {
   constructor(
     @InjectRepository(User)
     private userRepository: Repository<User>,
-  ) {}
+  ) { }
 
   async getAll(): Promise<Omit<User, 'password'>[]> {
     const users = await this.userRepository.find();
@@ -18,9 +18,11 @@ export class UserService {
     });
   }
 
-  async getById(id: string): Promise<Omit<User, 'password'> | undefined> {
+  async getById(id: string): Promise<Omit<User, 'password'>> {
     const user = await this.userRepository.findOne({ where: { id } });
-    if (!user) return undefined;
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
 
     return user;
   }
@@ -48,9 +50,11 @@ export class UserService {
     id: string,
     oldPassword: string,
     newPassword: string,
-  ): Promise<Omit<User, 'password'> | null | 'forbidden'> {
+  ): Promise<Omit<User, 'password'> | 'forbidden'> {
     const user = await this.userRepository.findOne({ where: { id } });
-    if (!user) return null;
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
     if (user.password !== oldPassword) {
       throw new HttpException('Old password is wrong', HttpStatus.FORBIDDEN);
     }

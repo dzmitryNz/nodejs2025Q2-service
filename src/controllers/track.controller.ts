@@ -83,9 +83,6 @@ export class TrackController {
       body.albumId || null,
       body.duration,
     );
-    if (!result) {
-      throw new HttpException('Track not found', HttpStatus.NOT_FOUND);
-    }
     return result;
   }
 
@@ -96,6 +93,6 @@ export class TrackController {
     if (!deleted) {
       throw new HttpException('Track not found', HttpStatus.NOT_FOUND);
     }
-    return { statusCode: 204 };
+    return { };
   }
 }

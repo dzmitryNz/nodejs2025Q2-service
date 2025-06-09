@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Artist } from '../models/artist.entity';
@@ -38,7 +38,9 @@ export class ArtistService {
     grammy: boolean,
   ): Promise<Artist | null> {
     const artist = await this.artistRepository.findOne({ where: { id } });
-    if (!artist) return null;
+    if (!artist) {
+      throw new NotFoundException('Artist not found');
+    }
 
     artist.name = name;
     artist.grammy = grammy;
