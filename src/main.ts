@@ -8,6 +8,7 @@ import * as path from 'path';
 
 import { AppModule } from './app.module';
 import { RequestInterceptor } from './interceptors/request.interceptor';
+import { ExceptionsFilter } from './filters/exceptions-filter';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -19,13 +20,14 @@ async function bootstrap() {
   app.useLogger(logger);
 
   const swaggerYaml = fs.readFileSync(
-    path.join(__dirname, '../doc/api.yaml'),
+    path.join(__dirname, '..', '..', 'doc/api.yaml'),
     'utf8',
   );
   const swaggerDocument = YAML.parse(swaggerYaml);
 
   app.useGlobalPipes(new ValidationPipe());
   app.useGlobalInterceptors(new RequestInterceptor(logger));
+  app.useGlobalFilters(new ExceptionsFilter(logger));
 
   SwaggerModule.setup('doc', app, swaggerDocument);
 
