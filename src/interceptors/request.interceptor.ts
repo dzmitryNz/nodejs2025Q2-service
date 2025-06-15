@@ -3,32 +3,33 @@ import {
   NestInterceptor,
   ExecutionContext,
   CallHandler,
-  Logger,
-  Req,
-  Res,
+  LoggerService,
 } from '@nestjs/common';
-import { Observable, throwError } from 'rxjs';
-import { tap, catchError, map } from 'rxjs/operators';
+import { Observable } from 'rxjs';
+import { tap, catchError } from 'rxjs/operators';
+import { Request, Response } from 'express';
+import { v4 as uuidv4 } from 'uuid';
 
 @Injectable()
 export class RequestInterceptor implements NestInterceptor {
-  constructor(private logger: Logger) {}
+  constructor(private readonly logger: LoggerService) {}
 
-  private formatRequest(@Req() req: Request | null) {
-    return req
-      ? {
-          body: req.body,
-          url: req.url,
-          headers: req.headers,
-          method: req.method,
-          path: req.url,
-        }
-      : null;
+  private formatRequest(req: Request) {
+    return {
+      body: req.body,
+      url: req.url,
+      headers: req.headers,
+      method: req.method,
+      path: req.url,
+      query: req.query,
+      params: req.params,
+    };
   }
 
-  private formatResponse(@Res() res: Response) {
+  private formatResponse(res: Response) {
     return {
-      code: res.status,
+      statusCode: res.statusCode,
+      statusMessage: res.statusMessage,
     };
   }
 
@@ -41,35 +42,45 @@ export class RequestInterceptor implements NestInterceptor {
       return next.handle();
     }
 
-    const request = this.formatRequest(req);
+    const requestId = req.headers['x-request-id'] || uuidv4();
+    req.headers['x-request-id'] = requestId;
+    res.setHeader('x-request-id', requestId);
 
-    this.logger.verbose(
-      `${req.method.toUpperCase()} ${req.url} ${req.headers['user-agent']}`,
-      { request },
+    const request = this.formatRequest(req);
+    const startTime = Date.now();
+
+    this.logger.log(
+      `[${requestId}] ${req.method.toUpperCase()} ${req.url}`,
+      {
+        request,
+        userAgent: req.headers['user-agent'],
+      },
     );
 
-    return next
-      .handle()
-      .pipe(
-        tap((response) => {
-          this.logger.verbose(
-            `${req.method.toUpperCase()} ${req.url} ${res.status} ${req.headers['user-agent']}`,
-            {
-              response: this.formatResponse(res),
-              data: response,
-            },
-          );
-        }),
-        map((response) => response),
-      )
-      .pipe(
-        catchError((error: Error) => {
-          this.logger.warn('Request Error', {
-            response: error.message,
-            error,
-          });
-          return throwError(() => error);
-        }),
-      );
+    return next.handle().pipe(
+      tap((response) => {
+        const duration = Date.now() - startTime;
+        this.logger.log(
+          `[${requestId}] ${req.method.toUpperCase()} ${req.url} ${res.statusCode} - ${duration}ms`,
+          {
+            response: this.formatResponse(res),
+            data: response,
+            duration,
+          },
+        );
+      }),
+      catchError((error: Error) => {
+        const duration = Date.now() - startTime;
+        this.logger.error(
+          `[${requestId}] ${req.method.toUpperCase()} ${req.url} - Error after ${duration}ms`,
+          {
+            error: error.message,
+            stack: error.stack,
+            duration,
+          },
+        );
+        throw error;
+      }),
+    );
   }
 }
