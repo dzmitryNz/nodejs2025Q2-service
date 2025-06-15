@@ -1,51 +1,87 @@
 # REST service: Logging & Error Handling and Authentication and Authorization
 
-## Basic Scope
+## Description
+
+# 1) Logging & Error Handling.
+
+Your task is to implement logging functionality to the already existing REST service.
+
+# 2) Authentication and Authorization
+
+Your task is to implement Authentication and Authorization with JWT (Access and Refresh tokens).
+- User can **signup** new account with personal login & password  
+– User can **login** with personal login & password, server returns response with Access token and Refresh token (Refresh token is in advanced scope).
+- **Refresh** token helps to get new pair Access/Refresh tokens (optional)
+– User now should use valid Access token to access  resources
+– When the Access token is expired, user can't use it anymore
+
+
+## Technical requirements
+
+- Only `@nestjs/common` and `@nestjs-core` Nest.js modules can be used for the logger and error handling feature assignment, other Nest.js modules are prohibited
+- Use 22.x.x version (22.14.0 or upper) of Node.js
+
+## Implementation details
 
 # 1) Logging & Error Handling:
 
-- **+20** Custom `LoggingService` is implemented and used for logging
-- **+20** Custom `Exception Filter` is implemented and used for handling exceptions during request processing
-- **+20** Logging for request (of at least `url`, `query parameters`, `body`) and response with `status code` is implemented.
-- **+20** Error handling is implemented including sending response with an appropriate `http status code` and errors logging.
-- **+10** Error handling  and logging is implemented for `uncaughtException` event.
-- **+10** Error handling  and logging is implemented for `unhandledRejection` event.
+1. Implement custom `LoggingService` which will be used for logging and provided via `dependency injection`
+2. Incoming requests to service (at least `url`, `query parameters`, `body`) and response with `status code` should be logged by `LoggingService`.
+3. Implement custom `Exception Filter` and use it for handling errors during request processing. In case of unexpected error response with HTTP code `500` (Internal Server Error) and standard message should be sent
+4. `LoggingService` should log all `errors`
+5. Add listener and logging to `uncaughtException` event
+6. Add listener and logging to `unhandledRejection` event
+7. Writing to `process.stdout` or to a file both can be used for logging
+8. There should be multiple logging levels and logging level should be stored in environment variable
+9. Log file rotation should be setup with file size (kB) parameter.
 
 
-# 2) Authentication and Authorization:
+# 2) Authentication and Authorization
 
-- **+30** Route `/auth/signup` implemented correctly, related logic is divided between controller and corresponding service
-- **+30** Route `/auth/login` has been implemented, related logic is divided between controller and corresponding service
-- **+10** `User` `password` saved into database as hash
-- **+20** Access Token is implemented,`JWT` payload contains `userId` and `login`, secret key is saved in `.env`.
-- **+40** Authentication is required for the access to all routes except `/auth/signup`, `/auth/login`, `/doc` and `/`.
-- **+10** Separate module is implemented **within application scope** to check that all requests to all routes except mentioned above contain required JWT token
-
-## Advanced Scope
-
-# 1) Logging & Error Handling:
-
-- **+20** Logs are written to a file.
-- **+10** Logs files are rotated with size.
-- **+10** Add environment variable to specify max file size.
-- **+10** Error logs are written to a separate file (either only to a separate file or in addition to logging into a common file).
-- **+20** Add environment variable to specify logging level and corresponding functionality.
-Logs with configured level to be registered as well as other higher priority levels. For example if you set level 2, all messages with levels 0, 1 and 2 should be logged. You should use Nest.js logging levels.
+1. Endpoints
+* `Signup` (`auth/signup` route)
+    * `POST auth/signup` - send `login` and `password` to create a new `user`
+      - Server should answer with `status code` **201** and corresponding message if dto is valid
+      - Server should answer with `status code` **400** and corresponding message if dto is invalid (no `login` or `password`, or they are not a `strings`)
+* `Login` (`auth/login` route)
+    * `POST auth/login` - send `login` and `password` to get Access token and Refresh token (optionally)
+      - Server should answer with `status code` **200** and tokens if dto is valid
+      - Server should answer with `status code` **400** and corresponding message if dto is invalid (no `login` or `password`, or they are not a `strings`)
+      - Server should answer with `status code` **403** and corresponding message if authentication failed (no user with such `login`, `password` doesn't match actual one, etc.)
+* `Refresh` (`auth/refresh` route)
+    * `POST auth/refresh` - send refresh token in body as `{ refreshToken }` to get new pair of Access token and Refresh token
+      - Server should answer with `status code` **200** and tokens in body if dto is valid
+      - Server should answer with `status code` **401** and corresponding message if dto is invalid (no `refreshToken` in body)
+      - Server should answer with `status code` **403** and corresponding message if authentication failed (Refresh token is invalid or expired)
 
 
-# 2) Authentication and Authorization:
-- **+30** Route `/auth/refresh` implemented correctly, related logic is divided between controller and corresponding service
+2. Once **POST** `/auth/signup` accepts `password` property, it is replaced with **hash** (for example, you can use [bcrypt package](https://www.npmjs.com/package/bcrypt) or its equivalent like `bcryptjs`) for password encryption, no raw passwords should be in database (NB! Password should remain hashed after any operation with service).
 
+3. **JWT** Access token should contain `userId` and `login` in a **payload** and has expiration time (expiration time of Refresh token should be longer, than Access token).
 
-## Forfeits
+4. The **JWT** Access token should be added in HTTP `Authorization` header to all requests that requires authentication. Proxy all the requests (except `auth/signup`, `auth/login`, `/doc`, `/`) and check that HTTP `Authorization` header has the correct value of **JWT** Access token.  
+HTTP authentication must follow `Bearer` scheme:
+  ```
+  Authorization: Bearer <jwt_token>
+  ```
 
-- **-10** for each failing test 
-(for authentication and authorization  module tests to be run with `npm run test:auth` )
-- **-30% of max task score** Commits after deadline, except commits that affect only Readme.md, .gitignore, etc.
-- **-10 points** for each error either on `npm run lint` on the basis of the **local config** or for compilation errors on the basis of the **local tsconfig** (`errors` not `warnings`).
-- **-20** No separate development branch
-- **-20** No Pull Request
-- **-10** Pull Request description is incorrect
-- **-20** Less than 3 commits in the development branch, not including commits that make changes only to `Readme.md` or similar files (`tsconfig.json`, `.gitignore`, `.prettierrc.json`, etc.)
+5. In case of the HTTP `Authorization` header in the request is absent or invalid or doesn’t follow `Bearer` scheme or Access token has expired, further router method execution should be stopped and lead to response with HTTP **401** code and the corresponding error message.
 
+6. Secrets used for signing the tokens should be stored in `.env` file.
 
+### `bcrypt` installation issues:
+
+#### If you see an error that starts with:
+
+```console
+gyp ERR! stack Error: "pre" versions of node cannot be installed, use the --nodedir flag instead
+```
+Please check [compatibility between Node.JS and Bcrypt versions](https://www.npmjs.com/package/bcrypt#version-compatibility).
+
+#### If you face an error like this:
+
+```console
+node-pre-gyp ERR! Tried to download(404): https://github.com/kelektiv/node.bcrypt.js/releases/download/v1.0.2/bcrypt_lib-v1.0.2-node-v48-linux-x64.tar.gz
+```
+
+Make sure you have the appropriate dependencies installed and configured for your platform. You can find installation instructions for the dependencies for some common platforms in [this page](https://github.com/kelektiv/node.bcrypt.js/wiki/Installation-Instructions).
