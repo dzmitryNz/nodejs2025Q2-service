@@ -1,5 +1,5 @@
 import { NestFactory } from '@nestjs/core';
-import { Logger, ValidationPipe } from '@nestjs/common';
+import { ValidationPipe } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { SwaggerModule } from '@nestjs/swagger';
 import * as YAML from 'yaml';
@@ -9,15 +9,15 @@ import * as path from 'path';
 import { AppModule } from './app.module';
 import { RequestInterceptor } from './interceptors/request.interceptor';
 import { ExceptionsFilter } from './filters/exceptions-filter';
+import { CustomLogger } from './services/logger.service';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const logger = new CustomLogger('Bootstrap');
+  const app = await NestFactory.create(AppModule, {
+    logger,
+  });
   const configService = app.get(ConfigService);
   const port = configService.get<number>('PORT', 4000);
-
-  const logger = new Logger();
-
-  app.useLogger(logger);
 
   const swaggerYaml = fs.readFileSync(
     path.join(__dirname, '..', '..', 'doc/api.yaml'),
@@ -31,7 +31,7 @@ async function bootstrap() {
 
   SwaggerModule.setup('doc', app, swaggerDocument);
 
-  logger.log({
+  logger.log('Application configuration:', {
     PORT: process?.env?.PORT,
     CRYPT_SALT: process?.env?.CRYPT_SALT?.length,
     JWT_SECRET_KEY: process?.env?.JWT_SECRET_KEY?.length,
@@ -47,5 +47,6 @@ async function bootstrap() {
   });
 
   await app.listen(port);
+  logger.log(`Application is running on: http://localhost:${port}`);
 }
 bootstrap();
